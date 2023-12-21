@@ -4,7 +4,7 @@ import telethon
 
 # 使用 comment 来区分仓位， 固定 交易品种 杠杆 stop loss
 intraday_comment = 'intraday'
-symbol = 'US500.cash'
+symbol = 'SPXm'
 leverage = 0.5
 stop_loss = 15
 
