@@ -8,12 +8,14 @@ symbol = 'US500.cash'
 leverage = 0.5
 stop_loss = 15
 
+################### Set parameter
 # Create App in my.telegram.org, you will get api_id and api_hash
 api_id = 0
 api_hash = ''
 # Find these info by testing.
 telegram_group_id = 1992922380
 telegram_user_id = 5138637335
+####################
 
 mt5.initialize()
 
@@ -32,7 +34,7 @@ def trade_long(comment, leverage, allow_more=False):
     if already_bought and not allow_more:
         print('Already bought, can not to buy more')
         return
-
+    
     balance = mt5.account_info().balance
     symbol_info = mt5.symbol_info(symbol)
     if symbol_info is None:
@@ -120,9 +122,12 @@ def get_group_id(peer_id):
     elif isinstance(peer_id, telethon.tl.types.PeerUser):
         return peer_id.user_id
 
+
+
+print(' ##### Listening message, please keep MT5 open ##### \n')
+print(mt5.account_info())
+
 # @client.on(events.NewMessage(chats=[telegram_group_id]))
-
-
 @client.on(events.NewMessage())
 async def my_event_handler1(event):
     group_id = event.message.peer_id
@@ -131,7 +136,7 @@ async def my_event_handler1(event):
     user_id1 = event.message.from_id.user_id if event.message.from_id else -1
     sms = event.raw_text.lower()
 
-    print('Listening message, please keep MT5 open')
+
     # Use this to find group id and userId
     print(event)
     print(sms)
