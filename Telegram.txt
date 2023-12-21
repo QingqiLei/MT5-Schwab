@@ -1,0 +1,4 @@
+api_id=0
+api_hash=0
+telegram_group_id=0
+telegram_user_id=0

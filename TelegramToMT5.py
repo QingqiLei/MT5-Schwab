@@ -7,7 +7,7 @@ symbol = 'SPXm'
 leverage = 0.5
 stop_loss = 15
 
-################### 需要设置参数
+# 需要设置参数, 在Telegram.txt 中设置参数
 # Create App in my.telegram.org, you will get api_id and api_hash
 api_id = 0
 api_hash = '0'
@@ -16,7 +16,17 @@ telegram_group_id = 0
 telegram_user_id = 0
 ####################
 
+with open('Telegram.txt') as f:
+    lines = f.readlines()
+    api_id = int(lines[0][lines[0].index('=') +1:])
+    api_hash = lines[1][lines[1].index('=') +1:]
+    telegram_group_id = int(lines[2][lines[2].index('=') +1:])
+    telegram_user_id = int(lines[3][lines[3].index('=') +1:])
+print('api_id=', api_id, ' ,api_hash=', api_hash, ' ,telegram_group_id=',
+      telegram_group_id, ' ,telegram_user_id=', telegram_user_id)
+
 mt5.initialize()
+
 
 def trade_long(comment, leverage, allow_more=False):
     '''
@@ -33,7 +43,7 @@ def trade_long(comment, leverage, allow_more=False):
     if already_bought and not allow_more:
         print('Already bought, can not to buy more')
         return
-    
+
     balance = mt5.account_info().balance
     symbol_info = mt5.symbol_info(symbol)
     if symbol_info is None:
@@ -54,7 +64,8 @@ def trade_long(comment, leverage, allow_more=False):
     print(volume_format)
     volume = float(volume_format.format(
         (balance * leverage/(price * trade_contract_size))))
-    print('price=',price, ', trade_contract_size=', trade_contract_size, ', volume_step=', volume_step, ', volume=', volume)
+    print('price=', price, ', trade_contract_size=', trade_contract_size,
+          ', volume_step=', volume_step, ', volume=', volume)
     sl = price - stop_loss
 
     request = {
@@ -124,11 +135,12 @@ def get_group_id(peer_id):
         return peer_id.user_id
 
 
-
 print(' ##### Listening message, please keep MT5 open ##### \n')
 print(mt5.account_info())
 
 # @client.on(events.NewMessage(chats=[telegram_group_id]))
+
+
 @client.on(telethon.events.NewMessage())   # comment out and use the abone one.
 async def my_event_handler1(event):
     group_id = event.message.peer_id
@@ -137,9 +149,8 @@ async def my_event_handler1(event):
     user_id1 = event.message.from_id.user_id if event.message.from_id else -1
     sms = event.raw_text.lower()
 
-
     # Use this to find group id and userId
-    print(event)  # comment out 
+    print(event)  # comment out
     print(sms)
 
     if group_id == telegram_group_id and user_id1 == telegram_user_id:

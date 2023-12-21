@@ -22,7 +22,7 @@
 
 
 ### 获取 Telegram API 密钥
-1. 在 https://my.telegram.org/ 中的 API development tools 创建一个APP，然后就有api_id, api_hash。 填入程序代码中
+1. 在 https://my.telegram.org/ 中的 API development tools 创建一个APP，然后就有api_id, api_hash。 填入**Telegram.txt**中
 
 
 
@@ -34,8 +34,8 @@
 
 1. 第一次运行会需要在log里填写手机号， 会发送验证码到APP里，填写验证码即可。
 
-2. 确定group id， user id。 确保 my_event_handler1 上面使用`@client.on(events.NewMessage())`, 来接受所有消息。 发送一条消息，然后在log 中查看
+2. 确定group id， user id, 填入**Telegram.txt**。 可以 my_event_handler1 上面使用`@client.on(events.NewMessage())`, 来接收所有消息。 发送一条消息，然后在log 中查看
 Telegram log 示例。 channel_id 是 1992922380， user_id 是 5138637335。 将channel_id 和user_id 填入程序中, 注意**保存 File -> Save**
 `NewMessage.Event(original_update=UpdateNewChannelMessage(message=Message(id=79, peer_id=PeerChannel(channel_id=1992922380), ...... from_id=PeerUser(user_id=5138637335),  ......`
 
-3. 正式运行程序， 注意查看输出确定MT5信息是否正确。注意电脑不要休眠、关机。
+3. 注释掉不需要的log，正式运行程序， 注意查看输出确定MT5信息是否正确。注意电脑不要休眠、关机。
