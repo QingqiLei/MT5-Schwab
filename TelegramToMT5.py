@@ -131,6 +131,7 @@ async def my_event_handler1(event):
     user_id1 = event.message.from_id.user_id if event.message.from_id else -1
     sms = event.raw_text.lower()
 
+    print('Listening message, please keep MT5 open')
     # Use this to find group id and userId
     print(event)
     print(sms)
