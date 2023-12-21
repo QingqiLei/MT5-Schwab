@@ -2,19 +2,19 @@ from telethon import TelegramClient, events
 import MetaTrader5 as mt5
 import telethon
 
-# Use comment to find position, stop_loss is a fixed number for SPX
+# 使用 comment 来区分仓位， 固定 交易品种 杠杆 stop loss
 intraday_comment = 'intraday'
 symbol = 'US500.cash'
 leverage = 0.5
 stop_loss = 15
 
-################### Set parameter
+################### 需要设置参数
 # Create App in my.telegram.org, you will get api_id and api_hash
 api_id = 0
 api_hash = ''
-# Find these info by testing.
-telegram_group_id = 1992922380
-telegram_user_id = 5138637335
+# 通过 my_event_handler1 中接受全部信息，查看log，来找所需要的 group id 和user id
+telegram_group_id = 0
+telegram_user_id = 0
 ####################
 
 mt5.initialize()
@@ -128,7 +128,7 @@ print(' ##### Listening message, please keep MT5 open ##### \n')
 print(mt5.account_info())
 
 # @client.on(events.NewMessage(chats=[telegram_group_id]))
-@client.on(events.NewMessage())
+@client.on(events.NewMessage())   # comment out and use the abone one.
 async def my_event_handler1(event):
     group_id = event.message.peer_id
     peer_id = event.message.peer_id
@@ -138,7 +138,7 @@ async def my_event_handler1(event):
 
 
     # Use this to find group id and userId
-    print(event)
+    print(event)  # comment out 
     print(sms)
 
     if group_id == telegram_group_id and user_id1 == telegram_user_id:
