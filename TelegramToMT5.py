@@ -1,4 +1,3 @@
-from telethon import TelegramClient, events
 import MetaTrader5 as mt5
 import telethon
 
@@ -11,7 +10,7 @@ stop_loss = 15
 ################### 需要设置参数
 # Create App in my.telegram.org, you will get api_id and api_hash
 api_id = 0
-api_hash = ''
+api_hash = '0'
 # 通过 my_event_handler1 中接受全部信息，查看log，来找所需要的 group id 和user id
 telegram_group_id = 0
 telegram_user_id = 0
@@ -51,9 +50,11 @@ def trade_long(comment, leverage, allow_more=False):
     price = mt5.symbol_info_tick(symbol).bid
     trade_contract_size = symbol_info.trade_contract_size
     volume_step = symbol_info.volume_step
-    print(price, trade_contract_size)
-    volume = float("{:.2f}".format(
+    volume_format = ("{:."+str(len(str(volume_step))-2)+"f}")
+    print(volume_format)
+    volume = float(volume_format.format(
         (balance * leverage/(price * trade_contract_size))))
+    print('price=',price, ', trade_contract_size=', trade_contract_size, ', volume_step=', volume_step, ', volume=', volume)
     sl = price - stop_loss
 
     request = {
@@ -111,7 +112,7 @@ def trade_close(comment, close_all=True):
         print('no position with comment ', comment)
 
 
-client = TelegramClient('anon', api_id, api_hash)
+client = telethon.TelegramClient('anon', api_id, api_hash)
 
 
 def get_group_id(peer_id):
@@ -128,7 +129,7 @@ print(' ##### Listening message, please keep MT5 open ##### \n')
 print(mt5.account_info())
 
 # @client.on(events.NewMessage(chats=[telegram_group_id]))
-@client.on(events.NewMessage())   # comment out and use the abone one.
+@client.on(telethon.events.NewMessage())   # comment out and use the abone one.
 async def my_event_handler1(event):
     group_id = event.message.peer_id
     peer_id = event.message.peer_id
