@@ -18,12 +18,12 @@ telegram_user_id = 0
 
 with open('Telegram.txt') as f:
     lines = f.readlines()
-    api_id = int(lines[0][lines[0].index('=') +1:])
-    api_hash = lines[1][lines[1].index('=') +1:]
-    telegram_group_id = int(lines[2][lines[2].index('=') +1:])
-    telegram_user_id = int(lines[3][lines[3].index('=') +1:])
+    api_id = int(lines[0][lines[0].index('=') + 1:])
+    api_hash = lines[1][lines[1].index('=') + 1:]
+    telegram_group_id = int(lines[2][lines[2].index('=') + 1:])
+    telegram_user_id = int(lines[3][lines[3].index('=') + 1:])
 print('api_id=', api_id, ' ,api_hash=', api_hash, ' ,telegram_group_id=',
-      telegram_group_id, ' ,telegram_user_id=', telegram_user_id)
+      telegram_group_id, ' ,telegram_user_id=', telegram_user_id, '\n')
 
 mt5.initialize()
 
@@ -136,30 +136,33 @@ def get_group_id(peer_id):
 
 
 print(' ##### Listening message, please keep MT5 open ##### \n')
-print(mt5.account_info())
+MT5_account_info = mt5.account_info()
+print('MT5 account:', MT5_account_info.login, ", equity:",
+      MT5_account_info.equity, ", server:", MT5_account_info.server, '\n')
 
 # @client.on(events.NewMessage(chats=[telegram_group_id]))
-
-
-@client.on(telethon.events.NewMessage())   # comment out and use the abone one.
+@client.on(telethon.events.NewMessage())   # 使用上面一行，来只接收特定的group.
 async def my_event_handler1(event):
+    MT5_account_info = mt5.account_info()
+    print('MT5 account:', MT5_account_info.login, ", equity:",
+          MT5_account_info.equity, ", server:", MT5_account_info.server)
     group_id = event.message.peer_id
     peer_id = event.message.peer_id
     group_id = get_group_id(peer_id)
-    user_id1 = event.message.from_id.user_id if event.message.from_id else -1
+    user_id = event.message.from_id.user_id if event.message.from_id else -1
     sms = event.raw_text.lower()
 
-    # Use this to find group id and userId
-    print(event)  # comment out
-    print(sms)
+    # 第一次运行时，通过log 获得group id 和user id， 填到Telegram.txt 中
+    print('message:', sms, ', group id:', group_id, ', user_id:', user_id)
 
-    if group_id == telegram_group_id and user_id1 == telegram_user_id:
+    if group_id == telegram_group_id and user_id == telegram_user_id:
         if 'buy spx' in sms:
             print('going to buy')
             trade_long(intraday_comment, leverage)
         if 'sell spx' in sms:
             print('going to sell')
             trade_close(intraday_comment)
+    print()
 
 client.start()
 client.run_until_disconnected()
