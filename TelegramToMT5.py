@@ -1,11 +1,19 @@
 import MetaTrader5 as mt5
 import telethon
+from SchwabTrader import Trader
+
+# 1: enable, others: disable
+enabled_schwab = 0
 
 # 使用 comment 来区分仓位， 固定 交易品种 杠杆 stop loss
 intraday_comment = 'intraday'
 symbol = 'SPXm'
 leverage = 0.5
 stop_loss = 15
+
+# schwab 参数, fund_portion: 买入这个比例资金的股票， 卖出时全部卖出
+schwab_long_symbol = 'XXXX'
+fund_portion = 0.25
 
 # 需要设置参数, 在Telegram.txt 中设置参数
 # Create App in my.telegram.org, you will get api_id and api_hash
@@ -22,11 +30,13 @@ with open('Telegram.txt') as f:
     api_hash = lines[1][lines[1].index('=') + 1:]
     telegram_group_id = int(lines[2][lines[2].index('=') + 1:])
     telegram_user_id = int(lines[3][lines[3].index('=') + 1:])
+
 print('api_id=', api_id, ' ,api_hash=', api_hash, ' ,telegram_group_id=',
       telegram_group_id, ' ,telegram_user_id=', telegram_user_id, '\n')
 
 mt5.initialize()
-
+client = telethon.TelegramClient('anon', api_id, api_hash)
+schwabTrader = Trader()
 
 def trade_long(comment, leverage, allow_more=False):
     '''
@@ -47,7 +57,7 @@ def trade_long(comment, leverage, allow_more=False):
     balance = mt5.account_info().balance
     symbol_info = mt5.symbol_info(symbol)
     if symbol_info is None:
-        print(symbol + ' not found')
+        print(symbol, 'is not found in MT5')
         return
 
     # if the symbol is unavailable in MarketWatch, add it
@@ -61,7 +71,6 @@ def trade_long(comment, leverage, allow_more=False):
     trade_contract_size = symbol_info.trade_contract_size
     volume_step = symbol_info.volume_step
     volume_format = ("{:."+str(len(str(volume_step))-2)+"f}")
-    print(volume_format)
     volume = float(volume_format.format(
         (balance * leverage/(price * trade_contract_size))))
     print('price=', price, ', trade_contract_size=', trade_contract_size,
@@ -94,7 +103,7 @@ def trade_close(comment, close_all=True):
     '''
     positions = mt5.positions_get()
     if not (positions and len(positions) > 0):
-        print('No position')
+        print('No position to sell in MT5')
         return
 
     found = False
@@ -120,10 +129,9 @@ def trade_close(comment, close_all=True):
             if not close_all:
                 break
     if not found:
-        print('no position with comment ', comment)
+        print('no position with comment', comment)
 
 
-client = telethon.TelegramClient('anon', api_id, api_hash)
 
 
 def get_group_id(peer_id):
@@ -140,8 +148,15 @@ MT5_account_info = mt5.account_info()
 print('MT5 account:', MT5_account_info.login, ", equity:",
       MT5_account_info.equity, ", server:", MT5_account_info.server, '\n')
 
-# @client.on(events.NewMessage(chats=[telegram_group_id]))
-@client.on(telethon.events.NewMessage())   # 使用上面一行，来只接收特定的group.
+
+if enabled_schwab:
+    schwabTrader.load()
+    print('Schwab order test !!! NOT REAL ORDER !!!:')
+    schwabTrader.trade(schwab_long_symbol, 0.1, direction = 'Buy', for_testing=True)
+
+
+@client.on(telethon.events.NewMessage(chats=[telegram_group_id]))
+# @client.on(telethon.events.NewMessage())   # 使用上面一行，来只接收特定的group.
 async def my_event_handler1(event):
     MT5_account_info = mt5.account_info()
     print('MT5 account:', MT5_account_info.login, ", equity:",
@@ -157,11 +172,16 @@ async def my_event_handler1(event):
 
     if group_id == telegram_group_id and user_id == telegram_user_id:
         if 'buy spx' in sms:
-            print('going to buy')
+            print('Going to buy, leverage:', leverage)
             trade_long(intraday_comment, leverage)
+            if enabled_schwab:
+                schwabTrader.trade(schwab_long_symbol, fund_portion, direction = 'Buy', for_testing=False)
         if 'sell spx' in sms:
-            print('going to sell')
+            print('Going to sell all position')
             trade_close(intraday_comment)
+            if enabled_schwab:
+                # Sell all position, keep 1 share to get its price.
+                schwabTrader.trade(schwab_long_symbol, fund_portion, direction = 'Sell', for_testing=False)
     print()
 
 client.start()

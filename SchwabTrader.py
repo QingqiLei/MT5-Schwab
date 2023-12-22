@@ -5,95 +5,69 @@ from datetime import datetime
 from schwab_api import Schwab
 import pprint
 
-SCHWAB_USERNAME=""
-SCHWAB_PASSWORD=""
-SCHWAB_TOTP_SECRET=""
-SCHWAB_ACCOUNT= 0
+class Trader():
 
-# the portion of schwab
-factor = 0.25
-
-# establish connection to the MetaTrader 5 terminal
-if not mt5.initialize():
-    print("initialize() failed, error code =",mt5.last_error())
-    quit()
-
-# Initialize our schwab instance
-api = Schwab()
-
-def is_market_opened() -> bool:
-    dt = datetime.now(pytz.timezone('US/Eastern'))
-    print(dt)
-    return 0 <= dt.weekday() <= 4 and 9*60+30 <= dt.hour*60+dt.minute <= 16*60
+    __slots__ = "SCHWAB_USERNAME", "SCHWAB_PASSWORD", "SCHWAB_TOTP_SECRET", "SCHWAB_ACCOUNT", "api"
 
 
-account_info_dict = mt5.account_info()._asdict()
-for prop in account_info_dict:
-    print("  {}={}".format(prop, account_info_dict[prop]))
+    def __init__(self) -> None:
+        self.api = None
+        self.SCHWAB_USERNAME = ""
+        self.SCHWAB_PASSWORD = ""
+        self.SCHWAB_TOTP_SECRET = ""
+        self.SCHWAB_ACCOUNT = ""
 
-schwab_logged_in = api.login(
-    username=SCHWAB_USERNAME,
-    password=SCHWAB_PASSWORD,
-    totp_secret=SCHWAB_TOTP_SECRET # Get this by generating TOTP at https://itsjafer.com/#/schwab
-)
+    def load(self):
+        self.load_parameter()
+        self.api = Schwab()
 
-# Get information about all accounts holdings
-print("Getting account holdings information")
-
-pprint.pprint(api.get_account_info())
-
-while True:
-    if not is_market_opened():
-        print('not in market hour, sleep 60s')
-        time.sleep(60)
-        continue
-    
-    mt5_positions=mt5.positions_get()
-    pprint.pprint(mt5_positions)
-    mt5_balance = mt5.account_info().balance
-    leverage = 0
-    for position in mt5_positions:
-        trade_contract_size=mt5.symbol_info(position.symbol).trade_contract_size
-        leverage += (position.volume * position.price_open * trade_contract_size)/mt5_balance
-
-    print('MT5 leverage:', leverage)
-    account_info = api.get_account_info()[SCHWAB_ACCOUNT]
-    available_cash = account_info['available_cash']
-    market_value = account_info['market_value']
-    account_value = account_info['account_value']
-    xxxx_price = 25
-    xxxx_qty = 0
-    for p in account_info['positions']:
-        if p['symbol'] == 'XXXX':
-            xxxx_price = p['market_value']
-            xxxx_qty += p['quantity']
-    diff = leverage * factor * account_value - market_value
-    print("Schwab available_cash: {}, market_value: {}, account_value: {}, xxxx_price: {}, xxxx_qty: {}, diff: {}".format(available_cash, market_value,account_value, xxxx_price, xxxx_qty, diff))
-    if abs(diff) < 0.01 * account_value:
-        time.sleep(10)
-        continue
-    side = 'Buy' if diff > 0 else 'Sell'
-
-    qty = int(min(abs(diff), available_cash) / xxxx_price) - 1
-    if leverage == 0:
-        qty = xxxx_qty -1
-    print('side:', side, 'qty:', qty)
-    messages, success = api.trade(
-        ticker="XXXX", 
-        side=side, #or Sell
-        qty=1, 
-        account_id=47198592, # Replace with your account number
-        dry_run=False # If dry_run=True, we won't place the order, we'll just verify it.
-    )
-
-    print("The order verification was " + "successful" if success else "unsuccessful")
-    # print("The order verification produced the following messages: ")
-    print(messages)
-    time.sleep(10)
-    
+        res = self.api.login(
+            username=self.SCHWAB_USERNAME,
+            password=self.SCHWAB_PASSWORD,
+            totp_secret=self.SCHWAB_TOTP_SECRET # Get this by generating TOTP at https://itsjafer.com/#/schwab
+        )
+        print('Schwab login was', "successful" if res else "unsuccessful")
 
 
-# shut down connection to the MetaTrader 5 terminal
-mt5.shutdown()
+    def load_parameter(self):
+        with open('Telegram.txt') as f:
+            lines = f.readlines()
+            self.SCHWAB_USERNAME = lines[4][lines[4].index('=') + 1:].strip()
+            self.SCHWAB_PASSWORD = lines[5][lines[5].index('=') + 1:].strip()
+            self.SCHWAB_TOTP_SECRET = lines[6][lines[6].index('=') + 1:].strip()
+            self.SCHWAB_ACCOUNT = int(lines[7][lines[7].index('=') + 1:])
+        print('SCHWAB_USERNAME=', self.SCHWAB_USERNAME, '\nSCHWAB_PASSWORD=', self.SCHWAB_PASSWORD, '\nSCHWAB_TOTP_SECRET=', self.SCHWAB_TOTP_SECRET, '\nSCHWAB_USERNAME=', self.SCHWAB_ACCOUNT, '\n')
+
+    def trade(self, symbol, portion, direction = 'Buy', for_testing = False):
+        account_info = self.api.get_account_info()[self.SCHWAB_ACCOUNT]
+        print('Schwab account info:', account_info)
+        
+        account_value = account_info['account_value']
+        settled_fund = account_info['settled_fund']
+        quotes = self.api.quote_v2(["PFE", "AAPL"])
+        symbol_price = 30
+        symbol_position_volume = 0
+
+        for p in account_info['positions']:
+            if p['symbol'] == symbol:
+                symbol_price = p['market_value'] / p['quantity']
+                symbol_position_volume += p['quantity']
+
+        volume = int(min(portion * account_value, settled_fund) / symbol_price) - 1  if direction == 'Buy' else symbol_position_volume - 1
+
+        if volume < 1:
+            print('Did not place order on schwab, volume is too small, volume:', volume)
+            return
+        print("Going to {} {} {} ,settled_fund: {}, account_value: {}, symbol_price: {}".format(direction, volume, symbol, settled_fund,account_value, symbol_price))
+        
+        messages, success = self.api.trade(
+            ticker=symbol, 
+            side=direction, # 'Buy' or 'Sell'
+            qty=volume, 
+            account_id=self.SCHWAB_ACCOUNT, # Replace with your account number
+            dry_run=for_testing # If dry_run=True, we won't place the order, we'll just verify it.
+        )
+        print("The schwab order verification was " + "successful" if success else "unsuccessful")
+        # print(messages)
 
 
