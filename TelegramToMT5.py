@@ -51,7 +51,7 @@ def trade_long(comment, leverage, allow_more=False):
         for position in positions:
             already_bought |= position.comment == comment
     if already_bought and not allow_more:
-        print('Already bought, can not to buy more')
+        print('Already bought, can not buy more')
         return
 
     balance = mt5.account_info().balance

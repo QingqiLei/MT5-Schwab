@@ -1,5 +1,3 @@
-"# MT5-Schwab" 
-
 ## 使用说明
 
 1. TelegramToMT5.py 可以接收特定 Telegram group， user的消息，作为信号来在MT5上交易标普 SPXm，Schwab 上交易股票。
@@ -30,10 +28,17 @@
 
 1. 第一次运行会需要在log里填写手机号， 会发送验证码到APP里，填写验证码即可。
 
-2. 确定group id， user id, 填入**Telegram.txt**。 group id， user id 是信号来源。可以 my_event_handler1 上面使用`@client.on(events.NewMessage())`, 来接收所有消息。 在telegram发送一条消息 （如果信号不是自己，就等待信号源发送信号），然后在log 中查看log。Telegram log 示例， channel_id 是 1992922380， user_id 是 5138637335。 将channel_id 和user_id 填入**Telegram.txt**中, 注意**保存**
+2. 确定group id， user id, 填入**Telegram.txt**。 group id， user id 是信号来源。在代码中， my_event_handler1 上面使用`@client.on(events.NewMessage())`, 来接收所有消息。 在telegram发送一条消息 （如果信号不是自己，就等待信号源发送信号），然后查看log。
+
+Telegram log 示例：
+
 `message: sell spx , group id: 1992922380 , user_id: 5138637335`
 
-3. 注释掉不需要的log，正式运行程序， 注意查看输出确定MT5信息是否正确。注意电脑不要休眠、关机。
+group id 是 1992922380， user_id 是 5138637335。 将 group id 和 user_id 填入**Telegram.txt**中, 注意**保存**
+
+3. 先进行测试，在MT5上登陆测试账号，Telegram.txt 中填写自己的 Telegram group id ， user id. 在telegram 中指定的group 中发送 "buy spx", "sell spx" 进行测试。
+
+4. 通过测试后，正式运行程序， 注意查看输出确定MT5信息是否正确。注意电脑不要休眠、关机。
 
 
 ### 交易Schwab 上的股票
