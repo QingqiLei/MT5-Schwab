@@ -1,21 +1,13 @@
 import MetaTrader5 as mt5
 import telethon
-from SchwabTrader import Trader
 import datetime
 import pytz
-
-# 1: enable, others: disable
-enabled_schwab = 0
 
 # 使用 comment 来区分仓位， 固定 交易品种 杠杆 stop loss
 intraday_comment = 'intraday'
 symbol = 'SPXm'
 leverage = 0.5
 stop_loss = 15
-
-# schwab 参数, fund_portion: 买入这个比例资金的股票， 卖出时全部卖出
-schwab_long_symbol = 'XXXX'
-fund_portion = 0.33
 
 # 需要设置参数, 在Telegram.txt 中设置参数
 # Create App in my.telegram.org, you will get api_id and api_hash
@@ -38,7 +30,6 @@ print('api_id=', api_id, ' ,api_hash=', api_hash, ' ,telegram_group_id=',
 
 mt5.initialize()
 client = telethon.TelegramClient('anon', api_id, api_hash)
-schwabTrader = Trader()
 
 def trade_long(comment, leverage, allow_more=False):
     '''
@@ -149,12 +140,6 @@ print('MT5 account:', MT5_account_info.login, ", equity:",
       MT5_account_info.equity, ", server:", MT5_account_info.server, '\n')
 
 
-if enabled_schwab:
-    schwabTrader.load()
-    print('Schwab order test !!! NOT REAL ORDER !!!:')
-    schwabTrader.trade(schwab_long_symbol, 0.1,
-                       direction='Buy', for_testing=True)
-
 fmt = '%Y-%m-%d %H:%M:%S'
 
 
@@ -179,16 +164,9 @@ async def my_event_handler1(event):
         if 'buy spx' in sms:
             print('Going to buy, leverage:', leverage)
             trade_long(intraday_comment, leverage)
-            if enabled_schwab:
-                schwabTrader.trade(
-                    schwab_long_symbol, fund_portion, direction='Buy', for_testing=False)
         if 'sell spx' in sms:
             print('Going to sell all position')
             trade_close(intraday_comment)
-            if enabled_schwab:
-                # Sell all position, keep 1 share to get its price.
-                schwabTrader.trade(
-                    schwab_long_symbol, fund_portion, direction='Sell', for_testing=False)
     print()
 
 client.start()
