@@ -16,7 +16,7 @@
 
 3. 在Command Prompt 中运行命令来安装所需要的包
 
-`pip install telethon && pip install MetaTrader5 && pip install schwab-api && python -m playwright install && pip install pyotp`
+`pip install telethon && pip install MetaTrader5 && pip install schwab-api && python -m playwright install && pip install pyotp &&  pip install pytz`
 
 ### 获取 Telegram API 密钥
 1. 在 https://my.telegram.org/ 中的 API development tools 创建一个APP，然后就有api_id, api_hash。 填入**Telegram.txt**中

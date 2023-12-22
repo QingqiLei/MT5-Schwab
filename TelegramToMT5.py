@@ -1,6 +1,8 @@
 import MetaTrader5 as mt5
 import telethon
 from SchwabTrader import Trader
+import datetime
+import pytz
 
 # 1: enable, others: disable
 enabled_schwab = 0
@@ -13,7 +15,7 @@ stop_loss = 15
 
 # schwab 参数, fund_portion: 买入这个比例资金的股票， 卖出时全部卖出
 schwab_long_symbol = 'XXXX'
-fund_portion = 0.25
+fund_portion = 0.33
 
 # 需要设置参数, 在Telegram.txt 中设置参数
 # Create App in my.telegram.org, you will get api_id and api_hash
@@ -132,8 +134,6 @@ def trade_close(comment, close_all=True):
         print('no position with comment', comment)
 
 
-
-
 def get_group_id(peer_id):
     if isinstance(peer_id, telethon.tl.types.PeerChat):
         return peer_id.chat_id
@@ -152,15 +152,16 @@ print('MT5 account:', MT5_account_info.login, ", equity:",
 if enabled_schwab:
     schwabTrader.load()
     print('Schwab order test !!! NOT REAL ORDER !!!:')
-    schwabTrader.trade(schwab_long_symbol, 0.1, direction = 'Buy', for_testing=True)
+    schwabTrader.trade(schwab_long_symbol, 0.1,
+                       direction='Buy', for_testing=True)
+
+fmt = '%Y-%m-%d %H:%M:%S'
 
 
 @client.on(telethon.events.NewMessage(chats=[telegram_group_id]))
 # @client.on(telethon.events.NewMessage())   # 使用上面一行，来只接收特定的group.
 async def my_event_handler1(event):
-    MT5_account_info = mt5.account_info()
-    print('MT5 account:', MT5_account_info.login, ", equity:",
-          MT5_account_info.equity, ", server:", MT5_account_info.server)
+    now = datetime.datetime.now(tz=pytz.timezone('US/Eastern'))
     group_id = event.message.peer_id
     peer_id = event.message.peer_id
     group_id = get_group_id(peer_id)
@@ -168,20 +169,26 @@ async def my_event_handler1(event):
     sms = event.raw_text.lower()
 
     # 第一次运行时，通过log 获得group id 和user id， 填到Telegram.txt 中
-    print('message:', sms, ', group id:', group_id, ', user_id:', user_id)
+    print('message:', sms, ',group id:', group_id,
+          ',user id:', user_id, ' ,time:', now.strftime(fmt))
+    MT5_account_info = mt5.account_info()
+    print('MT5 account:', MT5_account_info.login, ",equity:",
+          MT5_account_info.equity, ",server:", MT5_account_info.server)
 
     if group_id == telegram_group_id and user_id == telegram_user_id:
         if 'buy spx' in sms:
             print('Going to buy, leverage:', leverage)
             trade_long(intraday_comment, leverage)
             if enabled_schwab:
-                schwabTrader.trade(schwab_long_symbol, fund_portion, direction = 'Buy', for_testing=False)
+                schwabTrader.trade(
+                    schwab_long_symbol, fund_portion, direction='Buy', for_testing=False)
         if 'sell spx' in sms:
             print('Going to sell all position')
             trade_close(intraday_comment)
             if enabled_schwab:
                 # Sell all position, keep 1 share to get its price.
-                schwabTrader.trade(schwab_long_symbol, fund_portion, direction = 'Sell', for_testing=False)
+                schwabTrader.trade(
+                    schwab_long_symbol, fund_portion, direction='Sell', for_testing=False)
     print()
 
 client.start()
