@@ -2,31 +2,13 @@ import MetaTrader5 as mt5
 import telethon
 import datetime
 import pytz
+from Utils import *
 
 # 使用 comment 来区分仓位， 固定 交易品种 杠杆 stop loss
 intraday_comment = 'intraday'
 symbol = 'SPXm'
 leverage = 0.5
 stop_loss = 15
-
-# 需要设置参数, 在Telegram.txt 中设置参数
-# Create App in my.telegram.org, you will get api_id and api_hash
-api_id = 0
-api_hash = '0'
-# 通过 my_event_handler1 中接受全部信息，查看log，来找所需要的 group id 和user id
-telegram_group_id = 0
-telegram_user_id = 0
-####################
-
-with open('Telegram.txt') as f:
-    lines = f.readlines()
-    api_id = int(lines[0][lines[0].index('=') + 1:])
-    api_hash = lines[1][lines[1].index('=') + 1:]
-    telegram_group_id = int(lines[2][lines[2].index('=') + 1:])
-    telegram_user_id = int(lines[3][lines[3].index('=') + 1:])
-
-print('api_id=', api_id, ' ,api_hash=', api_hash, ' ,telegram_group_id=',
-      telegram_group_id, ' ,telegram_user_id=', telegram_user_id, '\n')
 
 mt5.initialize()
 client = telethon.TelegramClient('anon', api_id, api_hash)
@@ -124,24 +106,10 @@ def trade_close(comment, close_all=True):
     if not found:
         print('no position with comment', comment)
 
-
-def get_group_id(peer_id):
-    if isinstance(peer_id, telethon.tl.types.PeerChat):
-        return peer_id.chat_id
-    elif isinstance(peer_id, telethon.tl.types.PeerChannel):
-        return peer_id.channel_id
-    elif isinstance(peer_id, telethon.tl.types.PeerUser):
-        return peer_id.user_id
-
-
-print(' ##### Listening message, please keep MT5 open ##### \n')
+print(' ##### Listening message, please keep MT5 open, login the account you want to trade. ##### \n')
 MT5_account_info = mt5.account_info()
 print('MT5 account:', MT5_account_info.login, ", equity:",
       MT5_account_info.equity, ", server:", MT5_account_info.server, '\n')
-
-
-fmt = '%Y-%m-%d %H:%M:%S'
-
 
 @client.on(telethon.events.NewMessage(chats=[telegram_group_id]))
 # @client.on(telethon.events.NewMessage())   # 使用上面一行，来只接收特定的group.
@@ -155,7 +123,7 @@ async def my_event_handler1(event):
 
     # 第一次运行时，通过log 获得group id 和user id， 填到Telegram.txt 中
     print('message:', sms, ',group id:', group_id,
-          ',user id:', user_id, ' ,time:', now.strftime(fmt))
+          ',user id:', user_id, ' ,time:', now.strftime('%Y-%m-%d %H:%M:%S'))
     MT5_account_info = mt5.account_info()
     print('MT5 account:', MT5_account_info.login, ",equity:",
           MT5_account_info.equity, ",server:", MT5_account_info.server)
