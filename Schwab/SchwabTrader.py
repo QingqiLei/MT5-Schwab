@@ -3,7 +3,7 @@ import pytz
 import datetime
 import sys
 sys.path.append("..")
-from schwab_api import Schwab
+from local_schwab_api import Schwab
 import telethon
 
 
@@ -66,6 +66,10 @@ class Trader():
 client = telethon.TelegramClient('anon', api_id, api_hash)
 trader = Trader()
 
+print('\n*** Preview of placing order, for testing, not real trade ***\n')
+trader.trade(symbol, portion, for_testing=True)
+print()
+
 
 @client.on(telethon.events.NewMessage(chats=[telegram_group_id]))
 async def my_event_handler1(event):
@@ -75,6 +79,9 @@ async def my_event_handler1(event):
     group_id = get_group_id(peer_id)
     user_id = event.message.from_id.user_id if event.message.from_id else -1
     sms = event.raw_text.lower()
+    # 第一次运行时，通过log 获得group id 和user id， 填到Telegram.txt 中
+    print('message:', sms, ',group id:', group_id,
+          ',user id:', user_id, ' ,time:', now.strftime('%Y-%m-%d %H:%M:%S'))
 
     if group_id == telegram_group_id and user_id == telegram_user_id:
         if 'buy spx' in sms:
