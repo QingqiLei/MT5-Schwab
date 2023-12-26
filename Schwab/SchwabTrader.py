@@ -1,10 +1,12 @@
 import MetaTrader5 as mt5
 import pytz
 import datetime
-from schwab_api import Schwab
-import telethon
 import sys
 sys.path.append("..")
+from schwab_api import Schwab
+import telethon
+
+
 from Utils import *
 
 portion = 0.33
