@@ -43,7 +43,7 @@ with open(os.path.join(cur_dir, 'Telegram.txt')) as f:
     IBKR_symbol_id = lines[10][lines[10].index('=') + 1:].strip()
     IBKR_symbol_value_price_ratio = int(
         lines[11][lines[11].index('=') + 1:].strip())
-    MT5_symbol = lines[11][lines[11].index('=') + 1:].strip()
+    MT5_symbol = lines[12][lines[12].index('=') + 1:].strip()
 
 
 def get_group_id(peer_id):
