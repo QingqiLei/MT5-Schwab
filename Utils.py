@@ -1,5 +1,6 @@
 
 import telethon
+import os
 
 # 需要设置参数, 在Telegram.txt 中设置参数
 # Create App in my.telegram.org, you will get api_id and api_hash
@@ -13,9 +14,16 @@ SCHWAB_USERNAME = ""
 SCHWAB_PASSWORD = ""
 SCHWAB_TOTP_SECRET = ""
 SCHWAB_ACCOUNT = ""
+####################
+IBKR_account = ""
+IBKR_password = ""
+IBKR_symbol_id = ""
+IBKR_symbol_value_price_ratio = 0
 
 
-with open('Telegram.txt') as f:
+cur_dir = os.path.dirname(__file__)
+
+with open(os.path.join(cur_dir, 'Telegram.txt')) as f:
     lines = f.readlines()
     api_id = int(lines[0][lines[0].index('=') + 1:])
     api_hash = lines[1][lines[1].index('=') + 1:].strip()
@@ -27,6 +35,13 @@ with open('Telegram.txt') as f:
         '=') + 1:].strip()
     SCHWAB_ACCOUNT = int(lines[7][lines[7].index('=') + 1:])
 
+    IBKR_account = lines[8][lines[8].index('=') + 1:].strip()
+    IBKR_username = lines[9][lines[9].index(
+        '=') + 1:].strip()
+    IBKR_symbol_id = lines[10][lines[10].index('=') + 1:].strip()
+    IBKR_symbol_value_price_ratio = int(
+        lines[11][lines[11].index('=') + 1:].strip())
+
 
 def get_group_id(peer_id):
     if isinstance(peer_id, telethon.tl.types.PeerChat):
@@ -36,5 +51,6 @@ def get_group_id(peer_id):
     elif isinstance(peer_id, telethon.tl.types.PeerUser):
         return peer_id.user_id
 
-print("\n**Parameter**\napi_id:{} \napi_hash: {} \ntelegram_group_id: {} \ntelegram_user_id: {} \nSCHWAB_USERNAME: {} \nSCHWAB_PASSWORD: {} \nSCHWAB_TOTP_SECRET: {} \nSCHWAB_ACCOUNT: {}".format(
-    api_id, api_hash, telegram_group_id, telegram_user_id, SCHWAB_USERNAME, SCHWAB_PASSWORD, SCHWAB_TOTP_SECRET, SCHWAB_ACCOUNT))
+
+print("\n**Parameter**\napi_id:{} \napi_hash: {} \ntelegram_group_id: {} \ntelegram_user_id: {} \nSCHWAB_USERNAME: {} \nSCHWAB_PASSWORD: {} \nSCHWAB_TOTP_SECRET: {} \nSCHWAB_ACCOUNT: {} \nIBKR_account: {} \nIBKR_username: {} \nIBKR_symbol_id: {} \nIBKR_symbol_value_price_ratio: {}".format(
+    api_id, api_hash, telegram_group_id, telegram_user_id, SCHWAB_USERNAME, SCHWAB_PASSWORD, SCHWAB_TOTP_SECRET, SCHWAB_ACCOUNT, IBKR_account, IBKR_username, IBKR_symbol_id, IBKR_symbol_value_price_ratio))

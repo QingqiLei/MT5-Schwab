@@ -2,6 +2,8 @@ import MetaTrader5 as mt5
 import telethon
 import datetime
 import pytz
+import sys
+sys.path.append("..")
 from Utils import *
 
 # 使用 comment 来区分仓位， 固定 交易品种 杠杆 stop loss

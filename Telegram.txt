@@ -6,3 +6,7 @@ SCHWAB_USERNAME=0
 SCHWAB_PASSWORD=0
 SCHWAB_TOTP_SECRET=0
 SCHWAB_ACCOUNT=0
+IBKR_account=0
+IBKR_password=0
+IBKR_symbol_id=0@CME
+IBKR_symbol_value_price_ratio=0

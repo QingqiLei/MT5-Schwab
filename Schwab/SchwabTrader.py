@@ -3,6 +3,8 @@ import pytz
 import datetime
 from schwab_api import Schwab
 import telethon
+import sys
+sys.path.append("..")
 from Utils import *
 
 portion = 0.33
