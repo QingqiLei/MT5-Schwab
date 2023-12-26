@@ -19,6 +19,8 @@ IBKR_account = ""
 IBKR_password = ""
 IBKR_symbol_id = ""
 IBKR_symbol_value_price_ratio = 0
+####################
+MT5_symbol = ""
 
 
 cur_dir = os.path.dirname(__file__)
@@ -41,6 +43,7 @@ with open(os.path.join(cur_dir, 'Telegram.txt')) as f:
     IBKR_symbol_id = lines[10][lines[10].index('=') + 1:].strip()
     IBKR_symbol_value_price_ratio = int(
         lines[11][lines[11].index('=') + 1:].strip())
+    MT5_symbol = lines[11][lines[11].index('=') + 1:].strip()
 
 
 def get_group_id(peer_id):
@@ -52,5 +55,5 @@ def get_group_id(peer_id):
         return peer_id.user_id
 
 
-print("\n**Parameter**\napi_id:{} \napi_hash: {} \ntelegram_group_id: {} \ntelegram_user_id: {} \nSCHWAB_USERNAME: {} \nSCHWAB_PASSWORD: {} \nSCHWAB_TOTP_SECRET: {} \nSCHWAB_ACCOUNT: {} \nIBKR_account: {} \nIBKR_username: {} \nIBKR_symbol_id: {} \nIBKR_symbol_value_price_ratio: {}".format(
-    api_id, api_hash, telegram_group_id, telegram_user_id, SCHWAB_USERNAME, SCHWAB_PASSWORD, SCHWAB_TOTP_SECRET, SCHWAB_ACCOUNT, IBKR_account, IBKR_username, IBKR_symbol_id, IBKR_symbol_value_price_ratio))
+print("\n**Parameter**\napi_id:{} \napi_hash: {} \ntelegram_group_id: {} \ntelegram_user_id: {} \nSCHWAB_USERNAME: {} \nSCHWAB_PASSWORD: {} \nSCHWAB_TOTP_SECRET: {} \nSCHWAB_ACCOUNT: {} \nIBKR_account: {} \nIBKR_username: {} \nIBKR_symbol_id: {} \nIBKR_symbol_value_price_ratio: {} \nMT5_symbol: {}".format(
+    api_id, api_hash, telegram_group_id, telegram_user_id, SCHWAB_USERNAME, SCHWAB_PASSWORD, SCHWAB_TOTP_SECRET, SCHWAB_ACCOUNT, IBKR_account, IBKR_username, IBKR_symbol_id, IBKR_symbol_value_price_ratio,MT5_symbol))

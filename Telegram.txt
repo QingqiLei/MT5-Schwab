@@ -10,3 +10,4 @@ IBKR_account=0
 IBKR_password=0
 IBKR_symbol_id=0@CME
 IBKR_symbol_value_price_ratio=0
+MT5_symbol=0
