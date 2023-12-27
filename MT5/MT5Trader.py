@@ -6,7 +6,7 @@ import sys
 sys.path.append("..")
 from Utils import *
 
-# 使用 comment 来区分仓位， 固定 交易品种 杠杆 stop loss
+# 使用 comment 来区分仓位
 intraday_comment = 'intraday'
 
 stop_loss = 15

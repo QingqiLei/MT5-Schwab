@@ -23,12 +23,8 @@ with open(os.path.join(cur_dir, 'Telegram.txt')) as f:
     schwab_fund_portion_trade = float(lines[10][lines[10].index('=') + 1:].strip())
 
     ibkr_account = lines[11][lines[11].index('=') + 1:].strip()
-    ibkr_username = lines[12][lines[12].index(
-        '=') + 1:].strip()
-    ibkr_symbol_id = lines[13][lines[13].index('=') + 1:].strip()
-    ibkr_symbol_value_price_ratio = int(
-        lines[14][lines[14].index('=') + 1:].strip())
-    ibkr_leverage = float(lines[15][lines[15].index('=') + 1:].strip())
+    ibkr_symbol = lines[12][lines[12].index('=') + 1:].strip()
+    ibkr_leverage = float(lines[13][lines[13].index('=') + 1:].strip())
 
 
 def get_group_id(peer_id):
@@ -40,5 +36,5 @@ def get_group_id(peer_id):
         return peer_id.user_id
 
 
-print("\n**Parameter**\n api_id:{}\n api_hash: {} \n telegram_group_id: {} \n telegram_user_id: {} \n mt5_symbol: {} \n mt5_leverage: {} \n schwab_username: {} \n schwab_password: {} \n schwab_totp_secret: {} \n schwab_account: {} \n schwab_fund_portion_trade: {} \n ibkr_account: {} \n ibkr_username: {} \n ibkr_symbol_id: {} \n ibkr_symbol_value_price_ratio: {} \n ibkr_leverage: {}".format(
-    api_id, api_hash, telegram_group_id, telegram_user_id, mt5_symbol, mt5_leverage, schwab_username, schwab_password, schwab_totp_secret, schwab_account, schwab_fund_portion_trade, ibkr_account, ibkr_username, ibkr_symbol_id, ibkr_symbol_value_price_ratio, ibkr_leverage))
+print("\n**Parameter**\n api_id:{}\n api_hash: {} \n telegram_group_id: {} \n telegram_user_id: {} \n mt5_symbol: {} \n mt5_leverage: {} \n schwab_username: {} \n schwab_password: {} \n schwab_totp_secret: {} \n schwab_account: {} \n schwab_fund_portion_trade: {} \n ibkr_account: {} \n ibkr_symbol: {} \n ibkr_leverage: {}".format(
+    api_id, api_hash, telegram_group_id, telegram_user_id, mt5_symbol, mt5_leverage, schwab_username, schwab_password, schwab_totp_secret, schwab_account, schwab_fund_portion_trade, ibkr_account, ibkr_symbol, ibkr_leverage))

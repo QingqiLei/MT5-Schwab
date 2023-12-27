@@ -14,16 +14,20 @@ symbol_to_trade = 'XXXX'
 
 class Trader():
 
-    __slots__ = "api"
+    __slots__ = 'api', 'direction_buy', 'direction_sell'
 
     def __init__(self) -> None:
         self.api = Schwab()
+
         res = self.api.login(
             username=schwab_username,
             password=schwab_password,
             totp_secret=schwab_totp_secret
         )
+        self.direction_buy = 'Buy'
+        self.direction_sell = 'Sell'
         print('Schwab login was', "successful" if res else "unsuccessful")
+
 
     def trade(self, symbol, portion, direction='Buy', for_testing=False):
         account_info = self.api.get_account_info()[schwab_account]
@@ -41,7 +45,10 @@ class Trader():
                 symbol_position_volume += p['quantity']
 
         volume = int(min(portion * account_value, settled_fund) / symbol_price) - \
-            1 if direction == 'Buy' else symbol_position_volume - 1
+            1 if direction == self.direction_buy else symbol_position_volume - 1
+        
+        if direction == self.direction_buy:
+            volume -= symbol_position_volume
 
         if volume < 1:
             print('Did not place order on schwab, volume is too small, volume:', volume)
@@ -79,8 +86,8 @@ async def my_event_handler1(event):
     user_id = event.message.from_id.user_id if event.message.from_id else -1
     sms = event.raw_text.lower()
     # 第一次运行时，通过log 获得group id 和user id， 填到Telegram.txt 中
-    print('message:', sms, ',group id:', group_id,
-          ',user id:', user_id, ' ,time:', now.strftime('%Y-%m-%d %H:%M:%S'))
+    print('message:', sms, ', group id:', group_id,
+          ', user id:', user_id, ' , time:', now.strftime('%Y-%m-%d %H:%M:%S'))
 
     if group_id == telegram_group_id and user_id == telegram_user_id:
         if 'buy spx' in sms:
