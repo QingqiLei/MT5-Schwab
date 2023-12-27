@@ -1,4 +1,4 @@
-from schwab_api import generate_totp
+from local_schwab_api import generate_totp
 import pyotp
 
 '''
@@ -12,4 +12,3 @@ print("Your TOTP secret is: " + totp_secret)
 
 totp = pyotp.TOTP(totp_secret)
 print('Your Security Code is:', str(totp.now()))
-

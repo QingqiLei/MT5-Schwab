@@ -9,7 +9,6 @@ from Utils import *
 # 使用 comment 来区分仓位， 固定 交易品种 杠杆 stop loss
 intraday_comment = 'intraday'
 
-leverage = 0.5
 stop_loss = 15
 
 mt5.initialize()
@@ -32,19 +31,19 @@ def trade_long(comment, leverage, allow_more=False):
         return
 
     balance = mt5.account_info().balance
-    symbol_info = mt5.symbol_info(MT5_symbol)
+    symbol_info = mt5.symbol_info(mt5_symbol)
     if symbol_info is None:
-        print(MT5_symbol, 'is not found in MT5')
+        print(mt5_symbol, 'is not found in MT5')
         return
 
     # if the symbol is unavailable in MarketWatch, add it
     if not symbol_info.visible:
-        if not mt5.symbol_select(MT5_symbol, True):
-            print("symbol_select({}}) failed, exit", MT5_symbol)
+        if not mt5.symbol_select(mt5_symbol, True):
+            print("symbol_select({}}) failed, exit", mt5_symbol)
             return
 
     # Calculate volume and buy at market price
-    price = mt5.symbol_info_tick(MT5_symbol).bid
+    price = mt5.symbol_info_tick(mt5_symbol).bid
     trade_contract_size = symbol_info.trade_contract_size
     volume_step = symbol_info.volume_step
     volume_format = ("{:."+str(len(str(volume_step))-2)+"f}")
@@ -56,7 +55,7 @@ def trade_long(comment, leverage, allow_more=False):
 
     request = {
         "action": mt5.TRADE_ACTION_DEAL,
-        "symbol": MT5_symbol,
+        "symbol": mt5_symbol,
         "volume": volume,
         "type": mt5.ORDER_TYPE_BUY,
         "sl": sl,
@@ -67,11 +66,11 @@ def trade_long(comment, leverage, allow_more=False):
     # Send market order
     result = mt5.order_send(request)
     if result.retcode != mt5.TRADE_RETCODE_DONE:
-        print('Failed to buy ' + MT5_symbol +
+        print('Failed to buy ' + mt5_symbol +
               ', cause=' + result._asdict()['comment'])
     else:
         print('Success to buy ' +
-              str(float("{:.2f}".format(volume))) + ' '+MT5_symbol)
+              str(float("{:.2f}".format(volume))) + ' '+mt5_symbol)
 
 
 def trade_close(comment, close_all=True):
@@ -132,8 +131,8 @@ async def my_event_handler1(event):
 
     if group_id == telegram_group_id and user_id == telegram_user_id:
         if 'buy spx' in sms:
-            print('Going to buy, leverage:', leverage)
-            trade_long(intraday_comment, leverage)
+            print('Going to buy, leverage:', mt5_leverage)
+            trade_long(intraday_comment, mt5_leverage)
         if 'sell spx' in sms:
             print('Going to sell all position')
             trade_close(intraday_comment)

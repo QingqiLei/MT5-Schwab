@@ -2,26 +2,6 @@
 import telethon
 import os
 
-# 需要设置参数, 在Telegram.txt 中设置参数
-# Create App in my.telegram.org, you will get api_id and api_hash
-api_id = 0
-api_hash = '0'
-# 通过 my_event_handler1 中接受全部信息，查看log，来找所需要的 group id 和user id
-telegram_group_id = 0
-telegram_user_id = 0
-####################
-SCHWAB_USERNAME = ""
-SCHWAB_PASSWORD = ""
-SCHWAB_TOTP_SECRET = ""
-SCHWAB_ACCOUNT = ""
-####################
-IBKR_account = ""
-IBKR_password = ""
-IBKR_symbol_id = ""
-IBKR_symbol_value_price_ratio = 0
-####################
-MT5_symbol = ""
-
 
 cur_dir = os.path.dirname(__file__)
 
@@ -31,19 +11,24 @@ with open(os.path.join(cur_dir, 'Telegram.txt')) as f:
     api_hash = lines[1][lines[1].index('=') + 1:].strip()
     telegram_group_id = int(lines[2][lines[2].index('=') + 1:])
     telegram_user_id = int(lines[3][lines[3].index('=') + 1:])
-    SCHWAB_USERNAME = lines[4][lines[4].index('=') + 1:].strip()
-    SCHWAB_PASSWORD = lines[5][lines[5].index('=') + 1:].strip()
-    SCHWAB_TOTP_SECRET = lines[6][lines[6].index(
-        '=') + 1:].strip()
-    SCHWAB_ACCOUNT = int(lines[7][lines[7].index('=') + 1:])
+    mt5_symbol = lines[4][lines[4].index('=') + 1:].strip()
+    mt5_leverage = float(lines[5][lines[5].index('=') + 1:].strip())
 
-    IBKR_account = lines[8][lines[8].index('=') + 1:].strip()
-    IBKR_username = lines[9][lines[9].index(
+    schwab_username = lines[6][lines[6].index('=') + 1:].strip()
+    schwab_password = lines[7][lines[7].index('=') + 1:].strip()
+    schwab_totp_secret = lines[8][lines[8].index(
         '=') + 1:].strip()
-    IBKR_symbol_id = lines[10][lines[10].index('=') + 1:].strip()
-    IBKR_symbol_value_price_ratio = int(
-        lines[11][lines[11].index('=') + 1:].strip())
-    MT5_symbol = lines[12][lines[12].index('=') + 1:].strip()
+    schwab_account = int(lines[9][lines[9].index('=') + 1:].strip())
+    # use 
+    schwab_fund_portion_trade = float(lines[10][lines[10].index('=') + 1:].strip())
+
+    ibkr_account = lines[11][lines[11].index('=') + 1:].strip()
+    ibkr_username = lines[12][lines[12].index(
+        '=') + 1:].strip()
+    ibkr_symbol_id = lines[13][lines[13].index('=') + 1:].strip()
+    ibkr_symbol_value_price_ratio = int(
+        lines[14][lines[14].index('=') + 1:].strip())
+    ibkr_leverage = float(lines[15][lines[15].index('=') + 1:].strip())
 
 
 def get_group_id(peer_id):
@@ -55,5 +40,5 @@ def get_group_id(peer_id):
         return peer_id.user_id
 
 
-print("\n**Parameter**\napi_id:{} \napi_hash: {} \ntelegram_group_id: {} \ntelegram_user_id: {} \nSCHWAB_USERNAME: {} \nSCHWAB_PASSWORD: {} \nSCHWAB_TOTP_SECRET: {} \nSCHWAB_ACCOUNT: {} \nIBKR_account: {} \nIBKR_username: {} \nIBKR_symbol_id: {} \nIBKR_symbol_value_price_ratio: {} \nMT5_symbol: {}".format(
-    api_id, api_hash, telegram_group_id, telegram_user_id, SCHWAB_USERNAME, SCHWAB_PASSWORD, SCHWAB_TOTP_SECRET, SCHWAB_ACCOUNT, IBKR_account, IBKR_username, IBKR_symbol_id, IBKR_symbol_value_price_ratio,MT5_symbol))
+print("\n**Parameter**\n api_id:{}\n api_hash: {} \n telegram_group_id: {} \n telegram_user_id: {} \n mt5_symbol: {} \n mt5_leverage: {} \n schwab_username: {} \n schwab_password: {} \n schwab_totp_secret: {} \n schwab_account: {} \n schwab_fund_portion_trade: {} \n ibkr_account: {} \n ibkr_username: {} \n ibkr_symbol_id: {} \n ibkr_symbol_value_price_ratio: {} \n ibkr_leverage: {}".format(
+    api_id, api_hash, telegram_group_id, telegram_user_id, mt5_symbol, mt5_leverage, schwab_username, schwab_password, schwab_totp_secret, schwab_account, schwab_fund_portion_trade, ibkr_account, ibkr_username, ibkr_symbol_id, ibkr_symbol_value_price_ratio, ibkr_leverage))

@@ -1,16 +1,15 @@
+import sys
+sys.path.append("..")
+from Utils import *
+from local_schwab_api import Schwab
 import MetaTrader5 as mt5
 import pytz
 import datetime
-import sys
-sys.path.append("..")
-from local_schwab_api import Schwab
 import telethon
 
 
-from Utils import *
 
-portion = 0.33
-symbol = 'XXXX'
+symbol_to_trade = 'XXXX'
 
 
 class Trader():
@@ -20,14 +19,14 @@ class Trader():
     def __init__(self) -> None:
         self.api = Schwab()
         res = self.api.login(
-            username=SCHWAB_USERNAME,
-            password=SCHWAB_PASSWORD,
-            totp_secret=SCHWAB_TOTP_SECRET
+            username=schwab_username,
+            password=schwab_password,
+            totp_secret=schwab_totp_secret
         )
         print('Schwab login was', "successful" if res else "unsuccessful")
 
     def trade(self, symbol, portion, direction='Buy', for_testing=False):
-        account_info = self.api.get_account_info()[SCHWAB_ACCOUNT]
+        account_info = self.api.get_account_info()[schwab_account]
         print('Schwab account info:', account_info)
 
         account_value = account_info['account_value']
@@ -54,7 +53,7 @@ class Trader():
             ticker=symbol,
             side=direction,  # 'Buy' or 'Sell'
             qty=volume,
-            account_id=SCHWAB_ACCOUNT,  # Replace with your account number
+            account_id=schwab_account,  # Replace with your account number
             # If dry_run=True, we won't place the order, we'll just verify it.
             dry_run=for_testing
         )
@@ -67,7 +66,7 @@ client = telethon.TelegramClient('anon', api_id, api_hash)
 trader = Trader()
 
 print('\n*** Preview of placing order, for testing, not real trade ***\n')
-trader.trade(symbol, portion, for_testing=True)
+trader.trade(symbol_to_trade, schwab_fund_portion_trade, for_testing=True)
 print()
 
 
@@ -86,10 +85,11 @@ async def my_event_handler1(event):
     if group_id == telegram_group_id and user_id == telegram_user_id:
         if 'buy spx' in sms:
             print('Going to buy on schwab')
-            trader.trade(symbol, portion)
+            trader.trade(symbol_to_trade, schwab_fund_portion_trade)
         if 'sell spx' in sms:
-            print('Going to sell all position on schwab')
-            trader.trade(symbol, portion, direction='Sell')
+            print('Going to sell all {} position on schwab'.format(symbol_to_trade))
+            trader.trade(symbol_to_trade, schwab_fund_portion_trade,
+                         direction='Sell')
     print()
 
 client.start()
