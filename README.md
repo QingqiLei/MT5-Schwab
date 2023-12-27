@@ -16,7 +16,7 @@
 
 3. 在Command Prompt 中运行命令来安装所需要的包
 
-`pip install telethon && pip install MetaTrader5 && pip install schwab-api && python -m playwright install && pip install pyotp &&  pip install pytz`
+`pip install telethon && pip install MetaTrader5 && pip install schwab-api && python -m playwright install && pip install pyotp &&  pip install pytz && pip install tzdata && pip install pandas && pip install ib-insync`
 
 ### 获取 Telegram API 密钥
 1. 在 https://my.telegram.org/ 中的 API development tools 创建一个APP，然后就有api_id, api_hash。 填入**Telegram.txt**中
@@ -57,6 +57,25 @@ Your Security Code is: 0000
 4. 在Telegram.txt 中填写 Schwab 的用户名 密码 账号， 账号可以在https://client.schwab.com/app/trade/tom/#/trade 找到。
 ![IDLE](images/SchwabAccount.png)
 
+
+
+### 在Interactive 上交易
+
+1. 安装Java https://www.oracle.com/java/technologies/downloads/#jdk21-windows
+
+2. 在命令好中 运行 java， 如果显示没有找到命令， 就设置 environment variable https://confluence.atlassian.com/doc/setting-the-java_home-variable-in-windows-8895.html
+
+2. 下载并安装 latest 的 TWS API 和 TWS https://www.interactivebrokers.com/en/trading/ib-api.php
+
+
+3. 在 安装好的TWS API 文件夹下 {TWS API}\source\pythonclient， 运行 `python setup.py install`
+
+4. 打开TWS， 在右上角点击设置， API -> Precations 全部选中。 API -> Settings. 按照如下设置
+![IDLE](images/TWS_setting.png)
+
+5. 登陆 paper account. 先在 IBKR 网页上登陆 live account。 在setting 点击 Paper Trading Account， 查看Paper Trading Username， account number 和设置密码， 填入 Telegram.txt 中。 并在TWS 上登陆paper account。
+
+6. 运行程序， 在自己的telegram group 里 发送 'Buy spx', 'sell spx' 来测试，大小写不影响。
 
 
 
