@@ -6,7 +6,7 @@
 4. 包含 "buy spx"的消息是买入信号。包含 "sell spx"的消息是买入信号。大小写都可以。 
 5. 在 MT5 上，程序通过仓位的comment 识别是否为本程序下单，收到"buy spx" 后，程序会先检查是否有指定 comment的仓位，如果有，则不进行任何操作；如果没有，则买入指定杠杆的 symbol。 "sell spx" 会平掉所有带指定comment 的仓位。如果电脑上有多个MT5终端，那么会随机选择一个MT5进行交易。所以运行程序后要确认！
 6. 在 Schwab 上，程序只识别仓位的 symbol，收到"buy spx" 后，程序会先检查是否有指定symbol的仓位，如果有，杠杆不足就买入部分仓位以达到指定杠杆，杠杆大于指定杠杆就不做任何操作；如果没有，则买入指定杠杆的 symbol。 "sell spx" 会卖出symbol的所有仓位
-7. 在 Interactive 上，程序只识别仓位的 symbol，收到"buy spx" 后，程序会先检查是否有指定symbol的仓位，如果有，杠杆不足就买入部分仓位以达到指定杠杆，杠杆大于指定杠杆就不做任何操作；如果没有，则买入指定杠杆的 symbol。 "sell spx" 会平掉symbol的所有仓位， 如果 symbol 的仓位为负，会买入让仓位变0；如果 symbol 的仓位为正，会卖出让仓位变0.
+7. 在 Interactive 上，程序只识别仓位的 symbol，收到"buy spx" 后，程序会先检查是否有指定symbol的仓位，如果有，并仓位为负，就买入指定杠杆的symbol； 仓位为正，但是杠杆不足就买入部分仓位以达到指定杠杆，杠杆大于指定杠杆就不做任何操作；如果没有，则买入指定杠杆的 symbol。 "sell spx" 会平掉symbol的所有仓位， 如果 symbol 的仓位为负，会买入让仓位变0；如果 symbol 的仓位为正，会卖出让仓位变0.
 8. 安装 python 需要的包： `pip install telethon && pip install MetaTrader5 && pip install schwab-api && python -m playwright install && pip install pyotp &&  pip install pytz && pip install tzdata && pip install pandas && pip install ib-insync`
 
 
