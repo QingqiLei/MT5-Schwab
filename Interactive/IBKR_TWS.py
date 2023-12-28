@@ -1,13 +1,16 @@
-import nest_asyncio
 from dateutil.parser import parse
+import nest_asyncio
 import sys
 sys.path.append("..")
 from Utils import *
 from ib_insync import *
-import datetime
 import pytz
+import datetime
+
+
 
 nest_asyncio.apply()
+
 
 class Trader:
     def __init__(self, account) -> None:
@@ -20,6 +23,7 @@ class Trader:
         print()
 
         self.get_positions()
+        self.log = ''
 
     def get_fund_info(self):
         '''
@@ -50,6 +54,18 @@ class Trader:
 
         return res
 
+    def get_positions_with_expiration(self):
+        '''
+        return {symbol: [[volume, average cost]]}
+        '''
+        res = {}
+        for p in self.ib.reqPositions():
+            if p.account == self.account:
+                key = p.contract.symbol + " " + p.contract.lastTradeDateOrContractMonth
+                res[key] = str(int(p.position))+"@" + \
+                    str("{:.2f}".format(p.avgCost/int(p.contract.multiplier)))
+        return res
+
     def get_near_future_contract(self, symbol):
         '''
         return a conId, its future is 30 days easier than last trade date
@@ -76,6 +92,8 @@ class Trader:
         return float(util.df(self.ib.reqHistoricalData(contract=contract, endDateTime='', durationStr='1 D',  barSizeSetting='1 Hour', whatToShow='ASK', useRTH=True)).iloc[-1]['close'])
 
     def trade_future(self, symbol, leverage, for_testing=False):
+        self.log = 'IBKR receives signal to buy {} position with {} leverage\n'.format(
+            symbol, leverage)
         contract = self.get_near_future_contract(symbol)
         current_price = self.get_current_price(contract)
         net_liquidation, available_fund = self.get_fund_info()
@@ -84,23 +102,34 @@ class Trader:
 
         volume = round((leverage * net_liquidation) /
                        (current_price * float(contract.multiplier)))
-        t= volume
+        t = volume
         positions = self.get_positions()
         if symbol in positions:
             current_volume = sum(p[0] for p in positions[symbol])
             if current_volume > 0:
                 volume -= current_volume
-        
+
         if volume <= 0:
             if t > 0:
-                print('Did not place order on IBKR, already bought enough')
+                msg = 'Did not place order on IBKR, already bought enough'
             else:
-                print('Did not place order on IBKR, volume is too small, volume:', volume)
+                msg = 'Did not place order on IBKR, volume is too small, volume: ' + \
+                    int(volume)
+            print(msg)
+            self.append_log(msg)
+            self.append_log('Current positions:' +
+                            str(self.get_positions_with_expiration()))
             return
         market_order = MarketOrder('BUY', volume)
         self.place_order(contract, market_order, for_testing=for_testing)
+        self.append_log('Placed order to buy {} {} {}'.format(
+            market_order.totalQuantity, contract.symbol, contract.lastTradeDateOrContractMonth))
+        self.ib.sleep(2)
+        self.append_log('Current positions:' +
+                        str(self.get_positions_with_expiration()))
 
     def close(self, symbol, for_testing=False):
+        self.log = 'IBKR receives signal to close {} position\n'.format(symbol)
         positions = self.get_positions()
         if symbol in positions:
             for volume, average_cost, conId in positions[symbol]:
@@ -112,6 +141,11 @@ class Trader:
                 contract = self.get_contract_from_conId(conId)
                 self.place_order(contract, market_order,
                                  for_testing=for_testing)
+                self.append_log('Placed order to sell {} {} {}'.format(
+                    market_order.totalQuantity, contract.symbol, contract.lastTradeDateOrContractMonth))
+        self.ib.sleep(2)
+        self.append_log('Current positions:' +
+                        str(self.get_positions_with_expiration()))
 
     def place_order(self, contract, order1, for_testing=False):
         if for_testing:
@@ -131,6 +165,8 @@ class Trader:
         order_res.filledEvent += orderFilled
         order_res.cancelledEvent += orderFilled
 
+    def append_log(self, s):
+        self.log += (s + '\n')
 
 client = telethon.TelegramClient('anon', api_id, api_hash)
 trader = Trader(ibkr_account)
@@ -156,9 +192,11 @@ async def my_event_handler1(event):
         if 'buy spx' in sms:
             print('Going to buy on Interactive')
             trader.trade_future(ibkr_symbol, ibkr_leverage)
+            await client.send_message(telegram_log_group_id, trader.log)
         if 'sell spx' in sms:
             print('Going to sell all {} position on Interactive'.format(ibkr_symbol))
             trader.close(ibkr_symbol)
+            await client.send_message(telegram_log_group_id, trader.log)
     print()
 
 client.start()
