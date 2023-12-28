@@ -2,7 +2,7 @@
 
 1. MT5Trader.py 可以接收指定的 Telegram group， user的消息，作为信号来在MT5上交易 某个symbol。
 2. SchwabTrader.py 可以接收指定的 Telegram group， user的消息，作为信号来在 schwab 上交易 指定股票。
-3. IBKR_TWS.py 可以接收指定的 Telegram group， user的消息，作为信号来在MT5上交易 指定期货。
+3. IBKR_TWS.py 可以接收指定的 Telegram group， user的消息，作为信号来在 Interactive Broker 上交易 指定期货。
 4. 包含 "buy spx"的消息是买入信号。包含 "sell spx"的消息是买入信号。大小写都可以。 
 5. 在 MT5 上，程序通过仓位的comment 识别是否为本程序下单，收到"buy spx" 后，程序会先检查是否有指定 comment的仓位，如果有，则不进行任何操作；如果没有，则买入指定杠杆的 symbol。 "sell spx" 会平掉所有带指定comment 的仓位。如果电脑上有多个MT5终端，那么会随机选择一个MT5进行交易。所以运行程序后要确认！
 6. 在 Schwab 上，程序只识别仓位的 symbol，收到"buy spx" 后，程序会先检查是否有指定symbol的仓位，如果有，杠杆不足就买入部分仓位以达到指定杠杆，杠杆大于指定杠杆就不做任何操作；如果没有，则买入指定杠杆的 symbol。 "sell spx" 会卖出symbol的所有仓位
