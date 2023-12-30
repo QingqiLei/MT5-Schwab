@@ -1,9 +1,14 @@
+
 import MetaTrader5 as mt5
 import telethon
 import datetime
 import pytz
+import os
 import sys
-sys.path.append("..")
+
+cur_dir = os.path.split(os.path.abspath(__file__))[0]
+config_path = os.path.join(cur_dir, '..')
+sys.path.append(config_path)
 from Utils import *
 
 # 使用 comment 来区分仓位
@@ -13,6 +18,7 @@ stop_loss = 15
 
 mt5.initialize()
 client = telethon.TelegramClient('anon', api_id, api_hash)
+
 
 def trade_long(comment, leverage, allow_more=False):
     '''
@@ -107,10 +113,12 @@ def trade_close(comment, close_all=True):
     if not found:
         print('no position with comment', comment)
 
+
 print(' ##### Listening message, please keep MT5 open, login the account you want to trade. ##### \n')
 MT5_account_info = mt5.account_info()
 print('MT5 account:', MT5_account_info.login, ", equity:",
       MT5_account_info.equity, ", server:", MT5_account_info.server, '\n')
+
 
 @client.on(telethon.events.NewMessage(chats=[telegram_group_id]))
 # @client.on(telethon.events.NewMessage())   # 使用上面一行，来只接收特定的group.

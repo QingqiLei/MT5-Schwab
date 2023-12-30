@@ -1,13 +1,14 @@
 from dateutil.parser import parse
 import nest_asyncio
-import sys
-sys.path.append("..")
-from Utils import *
-from ib_insync import *
 import pytz
 import datetime
+import sys, os
 
-
+cur_dir = os.path.split(os.path.abspath(__file__))[0]
+config_path = os.path.join(cur_dir, '..')
+sys.path.append(config_path)
+from Utils import *
+from ib_insync import *
 
 nest_asyncio.apply()
 
