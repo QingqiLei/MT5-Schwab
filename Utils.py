@@ -31,7 +31,7 @@ with open(os.path.join(cur_dir, 'Telegram.txt'), 'r', encoding='UTF-8') as f:
     schwab_username = parse_string()
     schwab_password = parse_string()
     schwab_totp_secret = parse_string()
-    schwab_account = int(parse_string())
+    schwab_account = [int(a) for a in parse_string().split(',')]
 
     # use
     schwab_fund_portion_trade = float(parse_string())

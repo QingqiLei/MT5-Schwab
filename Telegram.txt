@@ -26,7 +26,7 @@ telegram_log_group_id 填自己的group id， 用于有信号后，程序打印l
 
 mt5_leverage: 整数,小数,大于1,小于1 的数都可以, 因为 MT5 上杠杆可以很高
 
-
+schwab_account 可以指定多个账号，用英文逗号分开
 schwab_fund_portion_trade 是 0到1之间的数，cash account 可以写 0.25， margin可以写 1. 表示有买入信号时,用多少比例的资金买入
 
 ibkr_account: 一般是DU 开头的, 可以运行程序后在log 中找到

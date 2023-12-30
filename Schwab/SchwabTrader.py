@@ -1,69 +1,95 @@
 import sys
-sys.path.append("..")
-from Utils import *
-from local_schwab_api import Schwab
+import os
 import MetaTrader5 as mt5
 import pytz
 import datetime
 import telethon
 
-
+cur_dir = os.path.split(os.path.abspath(__file__))[0]
+config_path = os.path.join(cur_dir, '..')
+sys.path.append(config_path)
+from local_schwab_api import Schwab
+from Utils import *
 
 symbol_to_trade = 'XXXX'
 
 
 class Trader():
 
-    __slots__ = 'api', 'direction_buy', 'direction_sell'
+    __slots__ = 'api', 'direction_buy', 'direction_sell', 'fund_info'
 
     def __init__(self) -> None:
         self.api = Schwab()
-
         res = self.api.login(
             username=schwab_username,
             password=schwab_password,
             totp_secret=schwab_totp_secret
         )
+        self.fund_info = {}
+        self.get_fund_info()
         self.direction_buy = 'Buy'
         self.direction_sell = 'Sell'
         print('Schwab login was', "successful" if res else "unsuccessful")
 
+    def get_fund_info(self):
+        all_acount_info = self.api.get_account_info_v2()
+        print('all_acount_info', all_acount_info)
+        for key in all_acount_info:
+            self.fund_info[key] = self.get_account_info(
+                all_acount_info[key], symbol_to_trade)
 
-    def trade(self, symbol, portion, direction='Buy', for_testing=False):
-        account_info = self.api.get_account_info()[schwab_account]
-        print('Schwab account info:', account_info)
-
+    def get_account_info(self, account_info, symbol):
+        account_value, settled_fund, symbol_price, symbol_position_volume = 0, 0, 30, 0
         account_value = account_info['account_value']
         settled_fund = account_info['settled_fund']
-        quotes = self.api.quote_v2(["PFE", "AAPL"])
-        symbol_price = 30
-        symbol_position_volume = 0
-
         for p in account_info['positions']:
             if p['symbol'] == symbol:
                 symbol_price = p['market_value'] / p['quantity']
                 symbol_position_volume += p['quantity']
+        return account_value, settled_fund, symbol_price, symbol_position_volume
 
-        volume = int(min(portion * account_value, settled_fund) / symbol_price) - \
-            1 if direction == self.direction_buy else symbol_position_volume - 1
-        
+    def trade_all_accounts(self, symbol, portion, direction='Buy', for_testing=False):
+        for account in schwab_account:
+            self.trade(account, symbol, portion, direction, for_testing)
+
+    def trade(self, account, symbol, portion, direction='Buy', for_testing=False):
+        print(self.fund_info[account])
+        all_acount_info = self.api.get_account_info()
+        account_value, settled_fund, symbol_price, symbol_position_volume = 0, 0, 30, 0
+        for key in all_acount_info:
+            symbol_price1 = self.get_account_info(
+                all_acount_info[key], symbol)[2]
+            if key == account:
+                print('found key == acount')
+                account_value, settled_fund, symbol_price, symbol_position_volume = self.get_account_info(
+                    all_acount_info[key], symbol)
+        symbol_price = symbol_price1
+
+        if account_value == 0:
+            account_value, settled_fund, symbol_price, symbol_position_volume = self.fund_info[account]
+        fund_to_use = min(portion * account_value, settled_fund)
+        volume = int(min(fund_to_use * 0.99, fund_to_use - symbol_price * 2) /
+                     symbol_price) if direction == self.direction_buy else symbol_position_volume - 1
         if direction == self.direction_buy:
             volume -= symbol_position_volume
 
         if volume < 1:
             print('Did not place order on schwab, volume is too small, volume:', volume)
             return
-        print("Going to {} {} {} ,settled_fund: {}, account_value: {}, symbol_price: {}".format(
-            direction, volume, symbol, settled_fund, account_value, symbol_price))
+        print("Going to {} {} {} for account {} ,settled_fund: {}, account_value: {}, symbol_price: {}, ".format(
+            direction, volume, symbol, account, settled_fund, account_value, symbol_price))
 
         messages, success = self.api.trade(
             ticker=symbol,
             side=direction,  # 'Buy' or 'Sell'
             qty=volume,
-            account_id=schwab_account,  # Replace with your account number
+            account_id=account,  # Replace with your account number
             # If dry_run=True, we won't place the order, we'll just verify it.
             dry_run=for_testing
         )
+        if success:
+            self.fund_info[account] = account_value, settled_fund - (
+                symbol_price * volume if direction == 'Buy' else 0), symbol_price, symbol_position_volume + (volume if direction == 'Buy' else -volume)
         print("The schwab order verification was " +
               "successful" if success else "unsuccessful")
         # print(messages)
@@ -73,7 +99,8 @@ client = telethon.TelegramClient('anon', api_id, api_hash)
 trader = Trader()
 
 print('\n*** Preview of placing order, for testing, not real trade ***\n')
-trader.trade(symbol_to_trade, schwab_fund_portion_trade, for_testing=True)
+trader.trade_all_accounts(symbol=symbol_to_trade,
+                          portion=schwab_fund_portion_trade, for_testing=True)
 print()
 
 
@@ -92,11 +119,12 @@ async def my_event_handler1(event):
     if group_id == telegram_group_id and user_id == telegram_user_id:
         if 'buy spx' in sms:
             print('Going to buy on schwab')
-            trader.trade(symbol_to_trade, schwab_fund_portion_trade)
+            trader.trade_all_accounts(symbol_to_trade,
+                                      schwab_fund_portion_trade)
         if 'sell spx' in sms:
             print('Going to sell all {} position on schwab'.format(symbol_to_trade))
-            trader.trade(symbol_to_trade, schwab_fund_portion_trade,
-                         direction='Sell')
+            trader.trade_all_accounts(symbol_to_trade,
+                                      schwab_fund_portion_trade, direction='Sell')
     print()
 
 client.start()

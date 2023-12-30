@@ -256,7 +256,7 @@ class Schwab(SessionManager):
             for message in response["orderStrategy"]["orderMessages"]:
                 messages.append(message["message"])
 
-        if response["orderStrategy"]["orderReturnCode"] == 0:
+        if response["orderStrategy"]["orderReturnCode"] in valid_return_codes:
             return messages, True
         
         return messages, False
@@ -304,6 +304,7 @@ class Schwab(SessionManager):
         account_info = dict()
         self.update_token()
         r = self.session.get(urls.positions_v2(), headers=self.headers)
+        print('!!!!!!!!!!: ', r)
         response = json.loads(r.text)
         for account in response['accounts']:
             positions = list()
@@ -327,13 +328,15 @@ class Schwab(SessionManager):
                 account["totals"]["cashInvestments"],
                 account["totals"]["accountValue"],
                 account["totals"].get("costBasis", 0),
+                account["balances"]["schwabBankSweepFeature"],
             )._as_dict()
 
         return account_info
     
     def update_token(self):
-        self.session.cookies.pop('ADRUM_BT1', None)
-        self.session.cookies.pop('ADRUM_BTa', None)
-        r = self.session.get("https://client.schwab.com/api/auth/authorize/scope/api")
-        token = json.loads(r.text)['token']
-        self.headers['authorization'] = f"Bearer {token}"
+        pass
+        # self.session.cookies.pop('ADRUM_BT1', None)
+        # self.session.cookies.pop('ADRUM_BTa', None)
+        # r = self.session.get("https://client.schwab.com/api/auth/authorize/scope/api")
+        # token = json.loads(r.text)['token']
+        # self.headers['authorization'] = f"Bearer {token}"
