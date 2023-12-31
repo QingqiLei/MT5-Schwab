@@ -16,7 +16,7 @@ symbol_to_trade = 'XXXX'
 
 class Trader():
 
-    __slots__ = 'api', 'direction_buy', 'direction_sell', 'fund_info'
+    __slots__ = 'api', 'direction_buy', 'direction_sell', 'fund_info', 'log'
 
     def __init__(self) -> None:
         self.api = Schwab()
@@ -49,10 +49,13 @@ class Trader():
         return account_value, settled_fund, symbol_price, symbol_position_volume
 
     def trade_all_accounts(self, symbol, portion, direction='Buy', for_testing=False):
+        self.log = ''
         for account in schwab_account:
             self.trade(account, symbol, portion, direction, for_testing)
+            
 
     def trade(self, account, symbol, portion, direction='Buy', for_testing=False):
+        self.append_log('{} Going to {} {} with portion {} on account {} '.format(('TESTING' if for_testing else ''), direction, symbol, portion, account))
         print(self.fund_info[account])
         all_acount_info = self.api.get_account_info()
         account_value, settled_fund, symbol_price, symbol_position_volume = 0, 0, 30, 0
@@ -60,7 +63,6 @@ class Trader():
             symbol_price1 = self.get_account_info(
                 all_acount_info[key], symbol)[2]
             if key == account:
-                print('found key == acount')
                 account_value, settled_fund, symbol_price, symbol_position_volume = self.get_account_info(
                     all_acount_info[key], symbol)
         symbol_price = symbol_price1
@@ -74,10 +76,14 @@ class Trader():
             volume -= symbol_position_volume
 
         if volume < 1:
-            print('Did not place order on schwab, volume is too small, volume:', volume)
+            s = 'Did not place order on schwab, volume is too small, volume: {}'.format(volume)
+            self.append_log(s)
+            print(s)
             return
-        print("Going to {} {} {} for account {} ,settled_fund: {}, account_value: {}, symbol_price: {}, ".format(
-            direction, volume, symbol, account, settled_fund, account_value, symbol_price))
+        s = "Going to {} {} {} for account {} ,settled_fund: {}, account_value: {}, symbol_price: {}, ".format(
+            direction, volume, symbol, account, settled_fund, account_value, symbol_price)
+        print(s)
+        self.append_log(s)
 
         messages, success = self.api.trade(
             ticker=symbol,
@@ -87,16 +93,25 @@ class Trader():
             # If dry_run=True, we won't place the order, we'll just verify it.
             dry_run=for_testing
         )
-        if success:
+        if success and not for_testing:
             self.fund_info[account] = account_value, settled_fund - (
                 symbol_price * volume if direction == 'Buy' else 0), symbol_price, symbol_position_volume + (volume if direction == 'Buy' else -volume)
-        print("The schwab order verification was " +
-              "successful" if success else "unsuccessful")
+        s = "The schwab order verification was " + "successful" if success else "unsuccessful"
+        print(s)
+        self.append_log(s+'\n')
         # print(messages)
+    def append_log(self, s):
+        self.log += (s + '\n')
 
 
 client = telethon.TelegramClient('anon', api_id, api_hash)
 trader = Trader()
+
+async def send_message(msg):
+    await client.send_message(telegram_log_group_id, msg)
+
+with client:
+    client.loop.run_until_complete(send_message('schwab trader started\n' + str(trader.fund_info)))
 
 print('\n*** Preview of placing order, for testing, not real trade ***\n')
 trader.trade_all_accounts(symbol=symbol_to_trade,
@@ -104,7 +119,7 @@ trader.trade_all_accounts(symbol=symbol_to_trade,
 print()
 
 
-@client.on(telethon.events.NewMessage(chats=[telegram_group_id]))
+@client.on(telethon.events.NewMessage())
 async def my_event_handler1(event):
     now = datetime.datetime.now(tz=pytz.timezone('US/Eastern'))
     group_id = event.message.peer_id
@@ -113,6 +128,10 @@ async def my_event_handler1(event):
     user_id = event.message.from_id.user_id if event.message.from_id else -1
     sms = event.raw_text.lower()
     # 第一次运行时，通过log 获得group id 和user id， 填到Telegram.txt 中
+
+    if now.hour >=17 or now.hour < 9:
+        await client.send_message(telegram_log_group_id, 'schwab trader exit')
+        exit()
     print('message:', sms, ', group id:', group_id,
           ', user id:', user_id, ' , time:', now.strftime('%Y-%m-%d %H:%M:%S'))
 
@@ -121,11 +140,17 @@ async def my_event_handler1(event):
             print('Going to buy on schwab')
             trader.trade_all_accounts(symbol_to_trade,
                                       schwab_fund_portion_trade)
+            await client.send_message(telegram_log_group_id, trader.log)
         if 'sell spx' in sms:
             print('Going to sell all {} position on schwab'.format(symbol_to_trade))
             trader.trade_all_accounts(symbol_to_trade,
                                       schwab_fund_portion_trade, direction='Sell')
+            await client.send_message(telegram_log_group_id, trader.log)
     print()
+
+
+
+
 
 client.start()
 client.run_until_disconnected()
