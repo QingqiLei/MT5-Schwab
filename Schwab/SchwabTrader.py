@@ -107,6 +107,17 @@ class Trader():
 client = telethon.TelegramClient('anon', api_id, api_hash)
 trader = Trader()
 
+async def check_channel():
+    chat_ids = {}
+    async for dialog in client.iter_dialogs():
+        chat_ids[str(dialog.id)] = dialog.name
+    print(chat_ids)
+    for k,v in chat_ids.items():
+            pass
+
+with client:
+    client.loop.run_until_complete(check_channel())
+
 async def send_message(msg):
     await client.send_message(telegram_log_group_id, msg)
 
@@ -129,7 +140,7 @@ async def my_event_handler1(event):
     sms = event.raw_text.lower()
     # 第一次运行时，通过log 获得group id 和user id， 填到Telegram.txt 中
 
-    if now.hour >=17 or now.hour < 9:
+    if now.hour >=17 or now.hour < 9 or now.weekday >=5:
         await client.send_message(telegram_log_group_id, 'schwab trader exit')
         exit()
     print('message:', sms, ', group id:', group_id,

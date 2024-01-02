@@ -172,6 +172,24 @@ class Trader:
 client = telethon.TelegramClient('anon', api_id, api_hash)
 trader = Trader(ibkr_account)
 
+# 打印出所有的 chat， 防止找不到 group id
+async def check_channel():
+    chat_ids = {}
+    async for dialog in client.iter_dialogs():
+        chat_ids[str(dialog.id)] = dialog.name
+    print(chat_ids)
+    for k,v in chat_ids.items():
+            pass
+
+with client:
+    client.loop.run_until_complete(check_channel())
+
+async def send_message(msg):
+    await client.send_message(telegram_log_group_id, msg)
+
+with client:
+    client.loop.run_until_complete(send_message('Interactive trader started\nFunds: {} \nPositions: {}'.format(str(trader.get_fund_info()), str(trader.get_positions())) ))
+
 print('\n*** Preview of placing order, for testing, not real trade ***\n')
 trader.trade_future(ibkr_symbol, ibkr_leverage, for_testing=True)
 print()
