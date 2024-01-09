@@ -115,6 +115,9 @@ async def check_channel():
     for k,v in chat_ids.items():
             pass
 
+if datetime.datetime.now(tz=pytz.timezone('US/Eastern')).weekday() >=5:
+    exit()
+
 with client:
     client.loop.run_until_complete(check_channel())
 
@@ -140,7 +143,7 @@ async def my_event_handler1(event):
     sms = event.raw_text.lower()
     # 第一次运行时，通过log 获得group id 和user id， 填到Telegram.txt 中
 
-    if now.hour >=17 or now.hour < 9 or now.weekday >=5:
+    if now.hour >=17 or now.hour < 9 or now.weekday() >=5:
         await client.send_message(telegram_log_group_id, 'schwab trader exit')
         exit()
     print('message:', sms, ', group id:', group_id,
